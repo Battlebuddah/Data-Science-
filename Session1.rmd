@@ -55,4 +55,3 @@ Bestpublisher <- merge(books,BestRatings)%>%
   arrange(desc(Durchschnittsbewertungen))
   
 ```
-
