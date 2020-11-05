@@ -1,0 +1,58 @@
+# Session 1
+### tidyverse initialisieren 
+```{r}
+library(tidyverse)
+```
+
+## Datebreinigen
+
+### neuer Container fuer BX_Books
+### nach Nutzen sortiert 
+```{r}
+books <- BX_Books %>%
+  select(ISBN,`Book-Title`,`Book-Author`,Publisher)
+```
+
+```{r}
+ratings <- BX_Book_Ratings %>%
+  select(`Book-Rating`,ISBN)
+```
+
+### Zusammenfassen von ratings und books, Auswahl nach Nutzen, Gruppieren der ISBN, Durchschnittsbewertungen zusammenfassen,
+```{r}
+BestRatings <- merge(ratings,books) %>%
+  select(ISBN,`Book-Rating`) %>%
+  group_by(ISBN)%>%
+  summarise(Durchschnittsbewertungen = mean(`Book-Rating`), Anzahl_Bewertungen = n())%>%
+  arrange(desc(Durchschnittsbewertungen))
+```
+
+# Besten Autor 
+### Zusammanfassung ratings/books, Selektion von Nützlichen 
+
+```{r}
+Bestautor <- merge(ratings,books)%>%
+  select(`Book-Author`,`Book-Rating`)
+  
+```
+### Priorisierung und Durchschnittsbewertung zusammenfassung
+
+```{r}
+Bestautor%>%
+  group_by(`Book-Author`)%>%
+  summarise(Durchschnittsbewertungen = mean(`Book-Rating`), Anzahl_Bewertungen = n())%>%
+  arrange(desc(Anzahl_Bewertungen))
+```
+ 
+# Beste Verlage
+### Zusammenfassung von books/BestRatings, Selektion von Nützlichen, Priorisierung Publisher, Zusammenrechnung Durchschnittsbewertung
+ 
+```{r}
+Bestpublisher <- merge(books,BestRatings)%>%
+  select(Publisher,Durchschnittsbewertungen,Anzahl_Bewertungen)%>%
+  group_by(Publisher)%>%
+  summarise(Durchschnittsbewertungen = mean(Durchschnittsbewertungen), Anzahl_Bewertungen = n())%>%
+  arrange(desc(Durchschnittsbewertungen))
+  
+```
+
