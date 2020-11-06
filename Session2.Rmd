@@ -1,0 +1,34 @@
+```{r}
+library(tidyverse)
+```
+### Container ISBN/Publisher 
+```{r}
+ISBNPublisher <- BX_Books %>%
+  select(ISBN,Publisher)
+```
+### Anzhal Bücher Container 
+```{r}
+AnzahlBooks <- BX_Books %>%
+  select(ISBN,Publisher)%>%
+  group_by(Publisher)%>%
+  summarise(Anzahl_der_Bücher = n())%>%
+  arrange(desc(Anzahl_der_Bücher))
+
+```
+### Anzahl Bewertungen Container 
+```{r}
+Anzahlratings <- merge(BX_Books,BX_Book_Ratings) %>%
+  group_by(Publisher)%>%
+  summarise(Anzahl_der_Ratings = n())%>%
+  arrange(desc(Anzahl_der_Ratings))
+```
+```{r}
+Relation <- merge(Anzahlratings, AnzahlBooks) %>%
+  select(Anzahl_der_Bücher,Anzahl_der_Ratings)
+```
+### Relation Plot 
+```{r}
+plot(Relation)
+```
+
+
