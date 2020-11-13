@@ -1,0 +1,62 @@
+```{r}
+library(readr)
+library(tidyverse)
+library(arules)
+library(arulesViz)
+```
+# Laden der Daten 
+```{r}
+BX_Book_Ratings <- read_delim("BX-Book-Ratings.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+BX_Books <- read_delim("BX-Books.csv", ";", 
+    escape_double = FALSE, trim_ws = TRUE)
+BX_Users <- read_delim("BX-Users.csv", ";", 
+    escape_double = FALSE, trim_ws = TRUE)
+```
+# Bereinigen der Bücher / Entfernung der Urdateien 
+```{r}
+books <- BX_Books %>%
+  select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, Publisher)
+rm(BX_Books)
+users <- BX_Users %>%
+mutate(Age= as.numeric(Age))  
+rm(BX_Users)
+ratings <- BX_Book_Ratings %>%
+  left_join(books)
+rm(BX_Book_Ratings)
+ratings <- ratings %>%
+  filter(!is.na(`Book-Title`))
+
+```
+```{r}
+users <- users %>%
+  filter(!is.na(Age)) %>%
+  mutate(country = str_remove(Location,".*,")) %>%
+  filter(country != "")
+all <- ratings %>%
+  left_join(users) %>%
+  select(-Location)
+write_csv(all, "all.csv")
+```
+# filter der schlechten Bewertungen 
+```{r}
+all <- read_csv("all.csv") %>%
+  filter(`Book-Rating` > 6)
+```
+# Austauschen von Buchtiteln durch Autoren 
+```{r}
+i <- split(all$`Book-Author`,all$`User-ID`)
+txn <- as(i, "transactions")
+basket_rules <- apriori(txn, parameter = list(sup = 0.001, conf = 0.0001, minlen=2, target="rules"))
+```
+### Daten sind nicht klar Trennbar. Fix wäre höherer sup 
+```{r}
+myRules_Direct <- as(basket_rules, "data.frame")
+basket_rules_hi <- head(basket_rules, by ="lift",100)
+head(myRules_Direct, 20)
+```
+
+```{r}
+plot(basket_rules_hi, method="graph", main="Books")
+```
+
